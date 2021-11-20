@@ -1,4 +1,5 @@
 # Shiny Application demonstrating use of the Lkj Prior
+All files can be found on GitHub at https://github.com/zekicankazan/STA-610-hw4
 ## File Descriptions
 * hw4.pdf: Document describing the application
 * hw4_shiny.R: Creates the shiny application
