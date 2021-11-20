@@ -65,18 +65,10 @@ ui <- fluidPage(withMathJax(), #Allows Latex text to be used
   )
 
 server <- function(input, output, session){
-  #Make the two rho and eta sliders match
-  observeEvent(input$eta2, {
-    updateSliderTextInput(session = session, inputId = "eta", 
-                          selected = input$eta2)
-  })
+  #Make the second rho and eta sliders match the first, when it is changed
   observeEvent(input$eta, {
     updateSliderTextInput(session = session, inputId = "eta2", 
                           selected = input$eta)
-  })
-  observeEvent(input$rho2, {
-    updateSliderTextInput(session = session, inputId = "rho", 
-                          selected = input$rho2)
   })
   observeEvent(input$rho, {
     updateSliderTextInput(session = session, inputId = "rho2", 
@@ -146,14 +138,14 @@ server <- function(input, output, session){
     ############# CHANGE THIS FILE PATH, IF NECCESARY #######################
     read_csv(paste0("hw4_cache/",
     #########################################################################
-                    "eta_", as.character(input$eta), 
-                    "_rho_", as.character(input$rho), ".csv"),
+                    "eta_", as.character(input$eta2), 
+                    "_rho_", as.character(input$rho2), ".csv"),
              col_types = "d")
   })
   
   #Plot the prior and posterior for a given rho/eta combination
   output$posterior_plot <- renderPlot({
-    rho_dens <- function(rho){0.5*dbeta((rho+1)/2, input$eta, input$eta)}
+    rho_dens <- function(rho){0.5*dbeta((rho+1)/2, input$eta2, input$eta2)}
 
      ggplot(data.frame(post = pull(post_samp())), aes(x = post)) +
       geom_function(fun = rho_dens, color = "red") +
@@ -161,7 +153,7 @@ server <- function(input, output, session){
                      aes(color = "Prior")) +
        geom_density(alpha = 0.1, color = "blue", fill = "blue",
                     aes(linetype = "Posterior")) +
-       geom_vline(xintercept = input$rho, linetype = "dashed") +
+       geom_vline(xintercept = input$rho2, linetype = "dashed") +
        xlim(-1,1) +
        labs(x = expression(rho), linetype = "", color = "") +
        theme_classic()

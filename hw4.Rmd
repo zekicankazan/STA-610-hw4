@@ -56,7 +56,7 @@ For whatever inputs the user selects, several output plots within the Shiny appl
 
 The shiny application can be run via the file `hw4_shiny.R`, which is included on Gradescope or in the GitHub repository \url{https://github.com/zekicankazan/STA-610-hw4}. Cached posterior samples for every combination of $\rho$ and $\eta$ are saved as CSV files to the folder `hw4_cache`, which is compressed as `hw4_cache.zip`. Additional files include `hw4_cacheing.R`, which includes the code to produce the CSV files and `hw4.Rmd`, which includes the code to produce this document.
 
-Note that because the posterior samples are cached, the user may need to adjust the file path in the `read_csv` command in `hw4_shiny.R`. This command is on line 147 of the code and looks like 
+Note that because the posterior samples are cached, the user may need to adjust the file path in the `read_csv` command in `hw4_shiny.R`. This command is on line 139 of the code and looks like 
 ```{r}
 read_csv(paste0("hw4_cache/",
 ```
@@ -64,22 +64,6 @@ The user should change `hw4_cache/` to be the path to whatever folder the CSV fi
 
 
 # III. Additional Details
-
-* Weakly informative prior choices for the other parameters: The priors for $\tau_0$ and $\tau_1$ are set to their `brms` defaults: for $\textrm{MAD}(\{y_{ij}\})$ the mean-absolute deviation of the response,
-$$
-\tau_0, \tau_1 \overset{iid}{\sim} t_3^+(0, \max\{2.5, \textrm{MAD}(\{y_{ij}\}) \})
-$$
-The priors for $\beta_0$ and $\beta_1$ are scaled dispersed normal distributions. That is, if $s_x$ is the sample standard deviation of $x_{ij}$, $s_y$ is the sample standard deviation of $y_{ij}$, and $\bar{y}$ is the grand mean, the priors are
-$$
-\begin{aligned}
-  \beta_0 &\sim \mathcal{N}(\bar{y}, 10s_y), \qquad \beta_1 \sim \mathcal{N}(0, 2.5s_y/s_x)
-\end{aligned}
-$$
-
-* For plotting the Lkj prior, I use the fact that the implied marginal distributions of the correlations are 
-$$
-\frac{\rho_{k_1k_2}+1}{2} \sim \textsf{Beta}\left(\eta + 1 - \frac{K}{2}, \eta + 1 - \frac{K}{2}\right).
-$$
 
 * I set the number of groups to $J = 8$, the number of observations per group to $n_j = 25 ~\forall j$, the fixed effects to $\beta_0 = 5$ and $\beta_1 = 2$, the random effect standard deviations to $\tau_0 = 2$ and $\tau_1 = 1$, and the residual standard deviation to $\sigma = 1$. Predictor values $x_{ij}$ are drawn from a standard normal distribution. The code to generate the data is included below
 
@@ -100,6 +84,17 @@ for(j in 1:J){
 }
 ```
 
+* Weakly informative prior choices for the other parameters: The priors for $\tau_0$, $\tau_1$, and $\sigma$ are set to their `brms` defaults. That is, for $\textrm{MAD}(\{y_{ij}\})$ the mean-absolute deviation of the response,
+$$
+\tau_0, \tau_1, \sigma \overset{iid}{\sim} t_3^+(0, \max\{2.5, \textrm{MAD}(\{y_{ij}\}) \})
+$$
+Rather than using the default flat priors, the priors for $\beta_0$ and $\beta_1$ are set to scaled dispersed normal distributions. That is, if $s_x$ is the sample standard deviation of $x_{ij}$, $s_y$ is the sample standard deviation of $y_{ij}$, and $\bar{y}$ is the grand mean, the priors are
+$$
+\begin{aligned}
+  \beta_0 &\sim \mathcal{N}(\bar{y}, 10s_y), \qquad \beta_1 \sim \mathcal{N}(0, 2.5s_y/s_x)
+\end{aligned}
+$$
+
 * The Stan Functions Reference recommends decomposing $\mathbf{\Omega} = \mathbf{LL}^T$, where $\mathbf{L}$ is a lower-triangular Cholesky factor of $\mathbf{\Omega}$, and putting a prior on $\mathbf{L}$ that implies $\mathbf{\Omega} \sim \textsf{Lkj}(\eta)$. This method is faster, is more numerically stable, and uses less memory than putting the prior directly on $\mathbf{\Omega}$. Thus I use this method to set the prior. The code to generate posterior samples in `brms` is presented below.
 
 ```{r}
@@ -114,6 +109,11 @@ prior <- c(set_prior(Int_prior, class = "Intercept"),
 mod <- brm(y ~ x + (x | group), data = data, cores = 4, chains = 4, 
            warmup = 1000, iter = 5000, prior = prior, seed = 1)
 ```
+
+* For plotting the Lkj prior, I use the fact that the implied marginal distributions of the correlations are 
+$$
+\frac{\rho_{k_1k_2}+1}{2} \sim \textsf{Beta}\left(\eta + 1 - \frac{K}{2}, \eta + 1 - \frac{K}{2}\right).
+$$
 
 
 # IV. References
