@@ -1,2 +1,3 @@
-# STA-610-hw4
-Lkj Prior Shiny App
+# Shiny Application demonstrating use of the Lkj Prior
+## File Descriptions
+* hw4_shiny: Creates the shiny application
